@@ -65,8 +65,9 @@ export class ConjoiningLinesComponent implements AfterViewInit {
     this.ctx.fillStyle = this.lineColor;
     for(let i = 0; i < this.points.length; i++) {
       for(let j = i + 1; j < this.points.length; j++) {
-        if (this.points[i].distance(this.points[j]) < this.minLineDistance) {
-          this.drawLine(this.points[i], this.points[j]);
+        const distance = this.points[i].distance(this.points[j])
+        if (distance < this.minLineDistance) {
+          this.drawLine(this.points[i], this.points[j], distance);
         }
       }
     }
@@ -105,7 +106,8 @@ export class ConjoiningLinesComponent implements AfterViewInit {
     }
   }
 
-  private drawLine(a: Point, b: Point) {
+  private drawLine(a: Point, b: Point, distance: number) {
+    this.ctx.lineWidth = 1 - Math.pow(distance / this.minLineDistance , 2);
     this.ctx.beginPath();
     this.ctx.moveTo(a.x, a.y);
     this.ctx.lineTo(b.x, b.y);
