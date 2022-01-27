@@ -1,4 +1,7 @@
 canvas {
-  border: 1px solid #131375;
-  border-radius: 8px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
 }

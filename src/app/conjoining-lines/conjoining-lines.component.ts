@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, Input, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, HostListener, Input, ViewChild} from '@angular/core';
 import {Point} from "./class/point";
 
 @Component({
@@ -15,7 +15,12 @@ export class ConjoiningLinesComponent implements AfterViewInit {
   @Input() maxPointsSpeed: number = 1.5;
   @Input() minLineDistance: number = 80;
 
-  @ViewChild('canvas') canvas: ElementRef | undefined;
+  @ViewChild('canvas') canvas: ElementRef<HTMLCanvasElement> | undefined;
+
+  @HostListener('window:resize', ['$event'])
+  onResize(event: any) {
+    this.setCanvasSize()
+  }
 
   private ctx!: CanvasRenderingContext2D;
   private points: Point[] = [];
@@ -30,16 +35,28 @@ export class ConjoiningLinesComponent implements AfterViewInit {
   }
 
   ngAfterViewInit(): void {
-    this.ctx = this.canvas?.nativeElement.getContext('2d');
-    this.canvasSize = {width: this.canvas?.nativeElement.width, height: this.canvas?.nativeElement.height};
-    if (this.ctx === undefined) {
-      throw new Error('ctx is undefined');
+    if (this.canvas === undefined) {
+      throw new Error('canvas is undefined');
     }
+    const ctx = this.canvas.nativeElement.getContext('2d');
 
-
+    if (ctx === null || ctx === undefined) {
+      throw new Error('2d ctx is unsupported');
+    }
+    this.ctx = ctx;
+    this.setCanvasSize();
     this.points = this.generatePoints();
     setInterval(() => this.loop(), 1000 / 60);
 
+  }
+
+  private setCanvasSize() {
+    if (this.canvas === undefined) {
+      throw new Error('canvas is undefined');
+    }
+    this.ctx.canvas.width = window.innerWidth;
+    this.ctx.canvas.height = window.innerHeight;
+    this.canvasSize = {width: this.canvas.nativeElement.width, height: this.canvas.nativeElement.height}
   }
 
   private loop() {
@@ -62,8 +79,8 @@ export class ConjoiningLinesComponent implements AfterViewInit {
   }
 
   private renderLines() {
-    for(let i = 0; i < this.points.length; i++) {
-      for(let j = i + 1; j < this.points.length; j++) {
+    for (let i = 0; i < this.points.length; i++) {
+      for (let j = i + 1; j < this.points.length; j++) {
         const distance = this.points[i].distance(this.points[j])
         if (distance < this.minLineDistance) {
           this.drawLine(this.points[i], this.points[j], distance);
@@ -74,10 +91,10 @@ export class ConjoiningLinesComponent implements AfterViewInit {
 
   private update() {
     this.points.forEach((point) => {
-      if(point.x > this.canvasSize.width || point.x < 0) {
+      if (point.x > this.canvasSize.width || point.x < 0) {
         point.changeVelocityX();
       }
-      if(point.y > this.canvasSize.height || point.y < 0) {
+      if (point.y > this.canvasSize.height || point.y < 0) {
         point.changeVelocityY();
       }
 
@@ -98,7 +115,7 @@ export class ConjoiningLinesComponent implements AfterViewInit {
 
   private renderPoints() {
     this.ctx.fillStyle = this.pointsColor;
-    for(let point of this.points) {
+    for (let point of this.points) {
       this.ctx.beginPath();
       this.ctx.arc(point.x, point.y, this.pointsRadius, 0, 2 * Math.PI, false);
       this.ctx.fill();
@@ -106,7 +123,7 @@ export class ConjoiningLinesComponent implements AfterViewInit {
   }
 
   private drawLine(a: Point, b: Point, distance: number) {
-    this.ctx.lineWidth = 1 - Math.pow(distance / this.minLineDistance , 2);
+    this.ctx.lineWidth = 1 - Math.pow(distance / this.minLineDistance, 2);
     this.ctx.beginPath();
     this.ctx.moveTo(a.x, a.y);
     this.ctx.lineTo(b.x, b.y);
