@@ -10,7 +10,7 @@ export class ConjoiningLinesComponent implements AfterViewInit {
   @Input() numberOfPoints: number = 200;
   @Input() pointsRadius: number = 3;
   @Input() pointsColor: string = '#3434c9';
-  @Input() lineColor: string = '#5454d5';
+  @Input() lineColor: string = '#424bce';
   @Input() minPointsSpeed: number = 0.05;
   @Input() maxPointsSpeed: number = 1.5;
   @Input() minLineDistance: number = 80;
@@ -53,16 +53,15 @@ export class ConjoiningLinesComponent implements AfterViewInit {
 
   private render() {
     this.ctx.clearRect(0, 0, this.canvasSize.width, this.canvasSize.height);
-    console.time('render-points');
-    this.renderPointsFor();
-    console.timeEnd('render-points');
     console.time('render-line');
     this.renderLines();
     console.timeEnd('render-line');
+    console.time('render-points');
+    this.renderPoints();
+    console.timeEnd('render-points');
   }
 
   private renderLines() {
-    this.ctx.fillStyle = this.lineColor;
     for(let i = 0; i < this.points.length; i++) {
       for(let j = i + 1; j < this.points.length; j++) {
         const distance = this.points[i].distance(this.points[j])
@@ -97,7 +96,7 @@ export class ConjoiningLinesComponent implements AfterViewInit {
     return points;
   }
 
-  private renderPointsFor() {
+  private renderPoints() {
     this.ctx.fillStyle = this.pointsColor;
     for(let point of this.points) {
       this.ctx.beginPath();
@@ -111,6 +110,7 @@ export class ConjoiningLinesComponent implements AfterViewInit {
     this.ctx.beginPath();
     this.ctx.moveTo(a.x, a.y);
     this.ctx.lineTo(b.x, b.y);
+    this.ctx.strokeStyle = this.lineColor;
     this.ctx.stroke();
   }
 }
