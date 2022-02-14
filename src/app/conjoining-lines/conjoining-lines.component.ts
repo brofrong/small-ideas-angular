@@ -1,4 +1,4 @@
-import {AfterViewInit, Component, ElementRef, HostListener, Input, ViewChild} from '@angular/core';
+import {AfterViewInit, Component, ElementRef, HostListener, Input, NgZone, ViewChild} from '@angular/core';
 import {Point} from "./class/point";
 
 @Component({
@@ -11,8 +11,8 @@ export class ConjoiningLinesComponent implements AfterViewInit {
   @Input() pointsRadius: number = 3;
   @Input() pointsColor: string = '#3434c9';
   @Input() lineColor: string = '#424bce';
-  @Input() minPointsSpeed: number = 0.05;
-  @Input() maxPointsSpeed: number = 1.5;
+  @Input() minPointsSpeed: number = 0.005;
+  @Input() maxPointsSpeed: number = 0.5;
   @Input() minLineDistance: number = 80;
 
   @ViewChild('canvas') canvas: ElementRef<HTMLCanvasElement> | undefined;
@@ -27,7 +27,9 @@ export class ConjoiningLinesComponent implements AfterViewInit {
 
   private canvasSize = {width: 0, height: 0};
 
-  constructor() {
+  constructor(
+    private ngZone: NgZone,
+  ) {
   }
 
   ngOnInit(): void {
@@ -46,8 +48,8 @@ export class ConjoiningLinesComponent implements AfterViewInit {
     this.ctx = ctx;
     this.setCanvasSize();
     this.points = this.generatePoints();
-    setInterval(() => this.loop(), 1000 / 60);
 
+    this.loop();
   }
 
   private setCanvasSize() {
@@ -60,12 +62,13 @@ export class ConjoiningLinesComponent implements AfterViewInit {
   }
 
   private loop() {
-
     this.render();
 
     console.time('update');
     this.update();
     console.timeEnd('update');
+
+    requestAnimationFrame(() => this.loop());
   }
 
   private render() {
@@ -91,15 +94,9 @@ export class ConjoiningLinesComponent implements AfterViewInit {
 
   private update() {
     this.points.forEach((point) => {
-      if (point.x > this.canvasSize.width || point.x < 0) {
-        point.changeVelocityX();
-      }
-      if (point.y > this.canvasSize.height || point.y < 0) {
-        point.changeVelocityY();
-      }
-
-      point.x += point.velocity.x;
-      point.y += point.velocity.y;
+      point.checkChangeDirection(this.canvasSize.width, this.canvasSize.height);
+      point.randomVelocity(this.maxPointsSpeed, this.maxPointsSpeed);
+      point.update();
     });
   }
 
