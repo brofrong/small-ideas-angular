@@ -1,1 +1,13 @@
-<p>mandelbrot-set works!</p>
+<div class="flex">
+  <canvas #canvas width="800" height="600"></canvas>
+  <div class="control">
+    <form [formGroup]="form" (submit)="submit()">
+      <input [formControlName]="'maxIterations'" placeholder="iteration">
+      <input [formControlName]="'x'" placeholder="x">
+      <input [formControlName]="'y'" placeholder="y">
+      <input [formControlName]="'scale'" placeholder="scale">
+      <button>Отрисовать</button>
+    </form>
+
+  </div>
+</div>
